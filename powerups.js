@@ -1,102 +1,130 @@
-// Free, always-available jump-collectible power-ups — no wallet needed.
-// Separate from vibepack.js (the rarer flying power-up) so each stays
-// simple; both are driven the same way from game.js.
+export const SHIELD_TYPE = "shield";
+export const SPEED_BOOST_TYPE = "speed";
 
-const PICKUP_SIZE = 28;
-const SPAWN_CHECK_INTERVAL = 6; // seconds between spawn-chance rolls
-const SPAWN_CHANCE = 0.08; // per check, per type — more common than VIBE PACK
-const RETRY_INTERVAL = 1.2;
-
-export const SHIELD_TYPE = 'shield';
-export const SPEED_BOOST_TYPE = 'speed_boost';
-export const SPEED_BOOST_DURATION = 4000; // ms
-export const SPEED_BOOST_MULTIPLIER = 1.35;
+export const SPEED_BOOST_DURATION = 5;
+export const SPEED_BOOST_MULTIPLIER = 1.5;
 
 export class PowerUpManager {
   constructor(groundY, gameWidth) {
     this.groundY = groundY;
     this.gameWidth = gameWidth;
-    this.pickups = [];
-    this.checkTimer = SPAWN_CHECK_INTERVAL;
+    this.powerUps = [];
+    this.spawnTimer = 0;
   }
 
   reset() {
-    this.pickups = [];
-    this.checkTimer = SPAWN_CHECK_INTERVAL;
+    this.powerUps = [];
+    this.spawnTimer = 0;
   }
 
   update(dt, speed) {
-    this.checkTimer -= dt;
-    if (this.checkTimer <= 0) {
-      this.checkTimer = RETRY_INTERVAL;
-      if (Math.random() < SPAWN_CHANCE) {
-        this.spawn(Math.random() < 0.5 ? SHIELD_TYPE : SPEED_BOOST_TYPE);
-        this.checkTimer = SPAWN_CHECK_INTERVAL;
-      }
+    this.spawnTimer += dt;
+
+    // Spawn a power-up periodically
+    if (this.spawnTimer >= 8) {
+      this.spawnTimer = 0;
+
+      const type =
+        Math.random() < 0.5
+          ? SHIELD_TYPE
+          : SPEED_BOOST_TYPE;
+
+      this.powerUps.push({
+        x: this.gameWidth + 30,
+        y: this.groundY - 70,
+        width: 32,
+        height: 32,
+        type
+      });
     }
 
-    for (const p of this.pickups) p.x -= speed * dt;
-    this.pickups = this.pickups.filter((p) => p.x + p.width > -20);
-  }
-
-  spawn(type) {
-    // jump-reachable height, same reasoning as coins' "high" formation
-    this.pickups.push({
-      type,
-      x: this.gameWidth + 40,
-      y: this.groundY - (120 + Math.random() * 60),
-      width: PICKUP_SIZE,
-      height: PICKUP_SIZE,
-    });
-  }
-
-  // Returns the type of pickup collected (or null), and removes it.
-  collect(playerBounds) {
-    for (let i = 0; i < this.pickups.length; i++) {
-      const p = this.pickups[i];
-      const hit =
-        playerBounds.x < p.x + p.width &&
-        playerBounds.x + playerBounds.width > p.x &&
-        playerBounds.y < p.y + p.height &&
-        playerBounds.y + playerBounds.height > p.y;
-      if (hit) {
-        this.pickups.splice(i, 1);
-        return p.type;
-      }
+    // Move power-ups
+    for (const powerUp of this.powerUps) {
+      powerUp.x -= speed * dt;
     }
-    return null;
+
+    // Remove off-screen power-ups
+    this.powerUps = this.powerUps.filter(
+      powerUp => powerUp.x + powerUp.width > -50
+    );
   }
 
   draw(ctx) {
-    for (const p of this.pickups) {
+    for (const powerUp of this.powerUps) {
       ctx.save();
-      const cx = p.x + p.width / 2;
-      const cy = p.y + p.height / 2;
-      if (p.type === SHIELD_TYPE) {
-        ctx.shadowColor = '#22d3ee';
-        ctx.shadowBlur = 12;
-        ctx.strokeStyle = '#22d3ee';
-        ctx.lineWidth = 3;
+
+      if (powerUp.type === SHIELD_TYPE) {
+        // Shield
+        ctx.fillStyle = "#00aaff";
+
         ctx.beginPath();
-        ctx.arc(cx, cy, p.width / 2, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.fillStyle = 'rgba(34, 211, 238, 0.25)';
+        ctx.arc(
+          powerUp.x + powerUp.width / 2,
+          powerUp.y + powerUp.height / 2,
+          powerUp.width / 2,
+          0,
+          Math.PI * 2
+        );
         ctx.fill();
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 18px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(
+          "S",
+          powerUp.x + powerUp.width / 2,
+          powerUp.y + powerUp.height / 2
+        );
       } else {
-        ctx.shadowColor = '#fbbf24';
-        ctx.shadowBlur = 12;
-        ctx.fillStyle = '#fbbf24';
+        // Speed boost
+        ctx.fillStyle = "#ffcc00";
+
         ctx.beginPath();
-        ctx.moveTo(cx - 6, cy - 12);
-        ctx.lineTo(cx + 8, cy - 2);
-        ctx.lineTo(cx, cy - 2);
-        ctx.lineTo(cx + 6, cy + 12);
-        ctx.lineTo(cx - 8, cy + 1);
-        ctx.lineTo(cx, cy + 1);
-        ctx.closePath();
+        ctx.arc(
+          powerUp.x + powerUp.width / 2,
+          powerUp.y + powerUp.height / 2,
+          powerUp.width / 2,
+          0,
+          Math.PI * 2
+        );
         ctx.fill();
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 18px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(
+          "⚡",
+          powerUp.x + powerUp.width / 2,
+          powerUp.y + powerUp.height / 2
+        );
       }
+
       ctx.restore();
     }
   }
+
+  collect(playerBounds) {
+    for (let i = this.powerUps.length - 1; i >= 0; i--) {
+      const powerUp = this.powerUps[i];
+
+      const collision =
+        playerBounds.x < powerUp.x + powerUp.width &&
+        playerBounds.x + playerBounds.width > powerUp.x &&
+        playerBounds.y < powerUp.y + powerUp.height &&
+        playerBounds.y + playerBounds.height > powerUp.y;
+
+      if (collision) {
+        const type = powerUp.type;
+
+        this.powerUps.splice(i, 1);
+
+        return type;
+      }
+    }
+
+    return null;
+  }
 }
+```
