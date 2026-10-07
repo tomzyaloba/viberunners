@@ -1,7 +1,11 @@
 import { Player } from './player.js';
+
 import { ObstacleManager } from './obstacles.js';
+
 import { UI } from './ui.js';
+
 import { CoinManager } from './coins.js';
+
 import {
   VibePackManager,
   VIBE_PACK_DURATION
@@ -10,12 +14,14 @@ import {
 import {
   PowerUpManager,
   SHIELD_TYPE,
+  SHIELD_DURATION,
   SPEED_BOOST_TYPE,
   SPEED_BOOST_DURATION,
   SPEED_BOOST_MULTIPLIER
 } from './powerups.js';
 
 import { AudioManager } from './audio.js';
+
 import {
   loadProgress,
   saveProgress
@@ -28,20 +34,34 @@ import {
   UNLOCK_RULES
 } from './web3.js';
 
+
 const GAME_WIDTH = 900;
+
 const GAME_HEIGHT = 506;
-const GROUND_Y = GAME_HEIGHT - 90;
+
+const GROUND_Y =
+  GAME_HEIGHT - 90;
+
 
 const RUN_SPEED = 320;
+
 const SPAWN_INTERVAL = 1.7;
 
-const DIFFICULTY_RAMP_DISTANCE = 7000;
-const MAX_SPEED_MULTIPLIER = 1.7;
 
-function speedMultiplierForDistance(distance) {
+const DIFFICULTY_RAMP_DISTANCE =
+  7000;
+
+const MAX_SPEED_MULTIPLIER =
+  1.7;
+
+
+function speedMultiplierForDistance(
+  distance
+) {
   const t =
     Math.min(
-      distance / DIFFICULTY_RAMP_DISTANCE,
+      distance /
+        DIFFICULTY_RAMP_DISTANCE,
       1
     );
 
@@ -52,62 +72,88 @@ function speedMultiplierForDistance(distance) {
   );
 }
 
+
 const STATE = {
   MENU: 'menu',
   PLAYING: 'playing',
   GAME_OVER: 'game_over'
 };
 
+
 const ACHIEVEMENTS = [
   {
     id: 'first_run',
-    message: 'ACHIEVEMENT: First Vibe Run',
-    check: (p) => p.gamesPlayed >= 1
+
+    message:
+      'ACHIEVEMENT: First Vibe Run',
+
+    check: (p) =>
+      p.gamesPlayed >= 1
   },
 
   {
     id: 'coin_collector',
-    message: 'ACHIEVEMENT: Vibe Collector (100 VIBE)',
-    check: (p) => p.totalVibeCoins >= 100
+
+    message:
+      'ACHIEVEMENT: Vibe Collector (100 VIBE)',
+
+    check: (p) =>
+      p.totalVibeCoins >= 100
   },
 
   {
     id: 'high_scorer',
-    message: 'ACHIEVEMENT: Score 5000+',
-    check: (p) => p.bestScore >= 5000
+
+    message:
+      'ACHIEVEMENT: Score 5000+',
+
+    check: (p) =>
+      p.bestScore >= 5000
   },
 
   {
     id: 'flyer',
-    message: 'ACHIEVEMENT: First Flight',
-    check: (p) => p.usedVibePack
+
+    message:
+      'ACHIEVEMENT: First Flight',
+
+    check: (p) =>
+      p.usedVibePack
   },
 
   {
     id: 'testnet_builder',
+
     message:
       "ACHIEVEMENT: You didn't just play VIBE RUNNER. You helped build the ecosystem.",
+
     check: (p) =>
       p.unlockedCharacters.length > 1
   }
 ];
 
+
 const canvas =
-  document.getElementById('game-canvas');
+  document.getElementById(
+    'game-canvas'
+  );
 
 const ctx =
   canvas.getContext('2d');
+
 
 function fitCanvas() {
   const dpr =
     window.devicePixelRatio || 1;
 
   const cssWidth =
-    canvas.parentElement.clientWidth;
+    canvas.parentElement
+      .clientWidth;
 
   const cssHeight =
     cssWidth *
-    (GAME_HEIGHT / GAME_WIDTH);
+    (GAME_HEIGHT /
+      GAME_WIDTH);
 
   canvas.style.width =
     cssWidth + 'px';
@@ -116,10 +162,14 @@ function fitCanvas() {
     cssHeight + 'px';
 
   canvas.width =
-    Math.round(GAME_WIDTH * dpr);
+    Math.round(
+      GAME_WIDTH * dpr
+    );
 
   canvas.height =
-    Math.round(GAME_HEIGHT * dpr);
+    Math.round(
+      GAME_HEIGHT * dpr
+    );
 
   ctx.setTransform(
     dpr,
@@ -131,28 +181,38 @@ function fitCanvas() {
   );
 }
 
+
 window.addEventListener(
   'resize',
   fitCanvas
 );
 
+
 fitCanvas();
+
 
 let progress =
   loadProgress();
 
-let isDayMode =
-  progress.dayMode ?? true;
 
-const ui = new UI();
+let isDayMode =
+  progress.dayMode ??
+  true;
+
+
+const ui =
+  new UI();
+
 
 const audio =
   new AudioManager(
     progress.soundEnabled
   );
 
+
 const wallet =
   new WalletManager();
+
 
 const obstacles =
   new ObstacleManager(
@@ -160,11 +220,13 @@ const obstacles =
     GAME_WIDTH
   );
 
+
 const coins =
   new CoinManager(
     GROUND_Y,
     GAME_WIDTH
   );
+
 
 const vibepack =
   new VibePackManager(
@@ -172,11 +234,13 @@ const vibepack =
     GAME_WIDTH
   );
 
+
 const powerups =
   new PowerUpManager(
     GROUND_Y,
     GAME_WIDTH
   );
+
 
 const player =
   new Player(
@@ -186,45 +250,77 @@ const player =
     )
   );
 
+
 let state =
   STATE.MENU;
 
+
 let score = 0;
+
 let distance = 0;
+
 let runCoins = 0;
+
 let lastTime = 0;
 
+
+// Speed boost is stored in milliseconds.
 let speedBoostTimer = 0;
+
 
 ui.setMuteIcon(
   progress.soundEnabled
 );
 
+
 ui.setDayNightIcon(
   isDayMode
 );
 
+
+/* =========================================================
+   RESET GAME
+   ========================================================= */
+
 function resetGame() {
-  player.setCharacter(
+  const character =
     getCharacter(
       progress.selectedCharacter
-    )
+    );
+
+
+  player.setCharacter(
+    character
   );
+
 
   player.reset(
     GROUND_Y
   );
 
+
   obstacles.reset();
+
   coins.reset();
+
   vibepack.reset();
+
   powerups.reset();
 
+
   score = 0;
+
   distance = 0;
+
   runCoins = 0;
+
   speedBoostTimer = 0;
 }
+
+
+/* =========================================================
+   START GAME
+   ========================================================= */
 
 function startGame() {
   resetGame();
@@ -235,8 +331,46 @@ function startGame() {
   ui.showGameplay();
 
   audio.init();
+
   audio.startMusic();
+
+
+  // Show the starting loadout to the player.
+  const character =
+    player.character;
+
+
+  if (
+    character.startShieldMul >
+    0
+  ) {
+    ui.showToast(
+      `🛡️ SHIELD READY — ${character.startShieldMul}× DURATION`
+    );
+  }
+
+
+  if (
+    character.startFlightMul >
+    0
+  ) {
+    setTimeout(() => {
+      if (
+        state ===
+        STATE.PLAYING
+      ) {
+        ui.showToast(
+          `🎒 VIBE PACK READY — ${character.startFlightMul}× DURATION`
+        );
+      }
+    }, 900);
+  }
 }
+
+
+/* =========================================================
+   ACHIEVEMENTS
+   ========================================================= */
 
 function unlockAchievements() {
   let unlockedSomething =
@@ -247,36 +381,56 @@ function unlockAchievements() {
       progress.achievements
     );
 
-  for (const a of ACHIEVEMENTS) {
+
+  for (
+    const achievement
+    of ACHIEVEMENTS
+  ) {
     if (
-      !achieved.has(a.id) &&
-      a.check(progress)
+      !achieved.has(
+        achievement.id
+      ) &&
+      achievement.check(progress)
     ) {
-      achieved.add(a.id);
+      achieved.add(
+        achievement.id
+      );
 
       ui.showToast(
-        a.message
+        achievement.message
       );
 
       unlockedSomething = true;
     }
   }
 
-  if (unlockedSomething) {
+
+  if (
+    unlockedSomething
+  ) {
     progress =
       saveProgress({
         achievements:
-          Array.from(achieved)
+          Array.from(
+            achieved
+          )
       });
   }
 }
+
+
+/* =========================================================
+   GAME OVER
+   ========================================================= */
 
 function endGame() {
   state =
     STATE.GAME_OVER;
 
+
   const finalScore =
     Math.floor(score);
+
 
   progress =
     saveProgress({
@@ -300,14 +454,23 @@ function endGame() {
         progress.gamesPlayed + 1
     });
 
+
   audio.play(
     'gameover'
   );
 
+
   unlockAchievements();
 
-  ui.setShieldIcon(false);
-  ui.setBoostIcon(false);
+
+  ui.setShieldIcon(
+    false
+  );
+
+  ui.setBoostIcon(
+    false
+  );
+
 
   ui.showGameOver(
     finalScore,
@@ -315,50 +478,70 @@ function endGame() {
   );
 }
 
+
+/* =========================================================
+   INPUT
+   ========================================================= */
+
 function handleJumpInput(e) {
   if (e) {
     e.preventDefault();
   }
 
+
   if (
-    state === STATE.PLAYING
+    state ===
+    STATE.PLAYING
   ) {
     player.jump();
+
 
     if (
       !player.isFlying
     ) {
-      audio.play('jump');
+      audio.play(
+        'jump'
+      );
     }
   }
 }
+
 
 canvas.addEventListener(
   'pointerdown',
   handleJumpInput
 );
 
+
 window.addEventListener(
   'keydown',
   (e) => {
     if (
-      e.code === 'Space' ||
-      e.code === 'ArrowUp'
+      e.code ===
+        'Space' ||
+      e.code ===
+        'ArrowUp'
     ) {
       handleJumpInput(e);
     }
   }
 );
 
+
 ui.onPlay(
   startGame
 );
+
 
 ui.onRestart(
   startGame
 );
 
-// HOME BUTTON
+
+/* =========================================================
+   HOME
+   ========================================================= */
+
 ui.onHome(() => {
   state =
     STATE.MENU;
@@ -372,48 +555,70 @@ ui.onHome(() => {
   );
 });
 
-// DAY / NIGHT BUTTON
-ui.onDayNightToggle(() => {
-  isDayMode =
-    !isDayMode;
 
-  progress =
-    saveProgress({
-      dayMode:
-        isDayMode
-    });
+/* =========================================================
+   DAY / NIGHT
+   ========================================================= */
 
-  ui.setDayNightIcon(
-    isDayMode
-  );
+ui.onDayNightToggle(
+  () => {
+    isDayMode =
+      !isDayMode;
 
-  ui.showToast(
-    isDayMode
-      ? '☀️ DAY MODE'
-      : '🌙 NIGHT MODE'
-  );
-});
 
-ui.onMuteToggle(() => {
-  const next =
-    !progress.soundEnabled;
+    progress =
+      saveProgress({
+        dayMode:
+          isDayMode
+      });
 
-  progress =
-    saveProgress({
-      soundEnabled:
-        next
-    });
 
-  audio.setEnabled(
-    next
-  );
+    ui.setDayNightIcon(
+      isDayMode
+    );
 
-  ui.setMuteIcon(
-    next
-  );
-});
 
-// --- Character menu --------------------------------------------------
+    ui.showToast(
+      isDayMode
+        ? '☀️ DAY MODE'
+        : '🌙 NIGHT MODE'
+    );
+  }
+);
+
+
+/* =========================================================
+   AUDIO
+   ========================================================= */
+
+ui.onMuteToggle(
+  () => {
+    const next =
+      !progress.soundEnabled;
+
+
+    progress =
+      saveProgress({
+        soundEnabled:
+          next
+      });
+
+
+    audio.setEnabled(
+      next
+    );
+
+
+    ui.setMuteIcon(
+      next
+    );
+  }
+);
+
+
+/* =========================================================
+   CHARACTER MENU
+   ========================================================= */
 
 function openCharacterMenu() {
   ui.openCharacterMenu(
@@ -425,41 +630,55 @@ function openCharacterMenu() {
             id
         });
 
+
       player.setCharacter(
         getCharacter(id)
       );
+
 
       openCharacterMenu();
     }
   );
 }
 
+
 ui.onOpenCharacterMenu(
   openCharacterMenu
 );
 
+
 ui.onCloseCharacterMenu(
-  () => ui.closeCharacterMenu()
+  () =>
+    ui.closeCharacterMenu()
 );
 
-// --- Testnet menu ----------------------------------------------------
+
+/* =========================================================
+   TESTNET UNLOCKS
+   ========================================================= */
 
 async function refreshUnlocksFromChain() {
-  if (!wallet.connected) {
+  if (
+    !wallet.connected
+  ) {
     return;
   }
+
 
   const newlyUnlockedCharacters =
     [
       ...progress.unlockedCharacters
     ];
 
+
   const newlyUnlockedPowerUps =
     [
       ...progress.unlockedPowerUps
     ];
 
+
   let changed = false;
+
 
   for (
     const rule of UNLOCK_RULES
@@ -469,17 +688,14 @@ async function refreshUnlocksFromChain() {
         rule
       );
 
+
     if (
       result.eligible
     ) {
       if (
         !newlyUnlockedCharacters.includes(
           rule.reward
-        ) &&
-        getCharacter(
-          rule.reward
-        ).id ===
-          rule.reward
+        )
       ) {
         newlyUnlockedCharacters.push(
           rule.reward
@@ -489,6 +705,7 @@ async function refreshUnlocksFromChain() {
       }
     }
   }
+
 
   if (changed) {
     progress =
@@ -500,11 +717,13 @@ async function refreshUnlocksFromChain() {
           newlyUnlockedPowerUps
       });
 
+
     ui.showToast(
-      'TESTNET BUILDER UNLOCKED'
+      '🎉 TESTNET CHARACTER UNLOCKED'
     );
   }
 }
+
 
 ui.onOpenTestnetMenu(
   async () => {
@@ -519,19 +738,25 @@ ui.onOpenTestnetMenu(
   }
 );
 
+
 ui.onCloseTestnetMenu(
   () =>
     ui.closeTestnetMenu()
 );
+
 
 ui.onConnectWallet(
   async () => {
     const result =
       await wallet.connect();
 
-    if (result.ok) {
+
+    if (
+      result.ok
+    ) {
       await refreshUnlocksFromChain();
     }
+
 
     ui.renderTestnetState(
       wallet,
@@ -539,6 +764,7 @@ ui.onConnectWallet(
     );
   }
 );
+
 
 ui.onDisconnectWallet(
   () => {
@@ -551,6 +777,7 @@ ui.onDisconnectWallet(
   }
 );
 
+
 ui.onSwitchNetwork(
   async () => {
     await wallet.switchNetwork();
@@ -562,7 +789,10 @@ ui.onSwitchNetwork(
   }
 );
 
-// --- Rendering -------------------------------------------------------
+
+/* =========================================================
+   BACKGROUND
+   ========================================================= */
 
 function drawBackground() {
   const grad =
@@ -573,9 +803,8 @@ function drawBackground() {
       GAME_HEIGHT
     );
 
-  if (isDayMode) {
-    // ☀️ DAY
 
+  if (isDayMode) {
     grad.addColorStop(
       0,
       '#87CEEB'
@@ -591,6 +820,7 @@ function drawBackground() {
       '#EAF9FF'
     );
 
+
     ctx.fillStyle =
       grad;
 
@@ -601,7 +831,7 @@ function drawBackground() {
       GAME_HEIGHT
     );
 
-    // Sun
+
     ctx.save();
 
     ctx.fillStyle =
@@ -610,8 +840,7 @@ function drawBackground() {
     ctx.shadowColor =
       '#FFD93D';
 
-    ctx.shadowBlur =
-      30;
+    ctx.shadowBlur = 30;
 
     ctx.beginPath();
 
@@ -627,7 +856,7 @@ function drawBackground() {
 
     ctx.restore();
 
-    // Day ground
+
     ctx.fillStyle =
       '#4C8C45';
 
@@ -639,12 +868,11 @@ function drawBackground() {
         GROUND_Y
     );
 
+
     ctx.strokeStyle =
       '#2F5E2A';
 
   } else {
-    // 🌙 NIGHT
-
     grad.addColorStop(
       0,
       '#050816'
@@ -660,6 +888,7 @@ function drawBackground() {
       '#19113D'
     );
 
+
     ctx.fillStyle =
       grad;
 
@@ -670,7 +899,7 @@ function drawBackground() {
       GAME_HEIGHT
     );
 
-    // Moon
+
     ctx.save();
 
     ctx.fillStyle =
@@ -679,8 +908,7 @@ function drawBackground() {
     ctx.shadowColor =
       '#FFFFFF';
 
-    ctx.shadowBlur =
-      25;
+    ctx.shadowBlur = 25;
 
     ctx.beginPath();
 
@@ -693,6 +921,7 @@ function drawBackground() {
     );
 
     ctx.fill();
+
 
     ctx.fillStyle =
       '#0B1230';
@@ -711,9 +940,10 @@ function drawBackground() {
 
     ctx.restore();
 
-    // Stars
+
     ctx.fillStyle =
       '#FFFFFF';
+
 
     const stars = [
       [90, 70],
@@ -728,8 +958,10 @@ function drawBackground() {
       [860, 60]
     ];
 
+
     for (
-      const [x, y] of stars
+      const [x, y]
+      of stars
     ) {
       ctx.beginPath();
 
@@ -744,7 +976,7 @@ function drawBackground() {
       ctx.fill();
     }
 
-    // Night ground
+
     ctx.fillStyle =
       '#120A2E';
 
@@ -756,11 +988,12 @@ function drawBackground() {
         GROUND_Y
     );
 
+
     ctx.strokeStyle =
       '#39FFCE';
   }
 
-  // Ground line
+
   ctx.lineWidth = 3;
 
   ctx.beginPath();
@@ -778,6 +1011,11 @@ function drawBackground() {
   ctx.stroke();
 }
 
+
+/* =========================================================
+   COLLISION
+   ========================================================= */
+
 function checkCollision(a, b) {
   return (
     a.x <
@@ -791,15 +1029,23 @@ function checkCollision(a, b) {
   );
 }
 
+
+/* =========================================================
+   MAIN LOOP
+   ========================================================= */
+
 function loop(timestamp) {
   if (!lastTime) {
     lastTime =
       timestamp;
   }
 
+
   let dt =
-    (timestamp - lastTime) /
+    (timestamp -
+      lastTime) /
     1000;
+
 
   dt =
     Math.min(
@@ -807,15 +1053,20 @@ function loop(timestamp) {
       0.05
     );
 
+
   lastTime =
     timestamp;
 
+
   if (
-    state === STATE.PLAYING
+    state ===
+    STATE.PLAYING
   ) {
     const character =
       player.character;
 
+
+    // Speed boost timer.
     if (
       speedBoostTimer > 0
     ) {
@@ -827,10 +1078,12 @@ function loop(timestamp) {
         );
     }
 
+
     const boostMul =
       speedBoostTimer > 0
         ? SPEED_BOOST_MULTIPLIER
         : 1;
+
 
     const speed =
       RUN_SPEED *
@@ -840,7 +1093,9 @@ function loop(timestamp) {
       ) *
       boostMul;
 
+
     player.update(dt);
+
 
     obstacles.update(
       dt,
@@ -848,50 +1103,65 @@ function loop(timestamp) {
       SPAWN_INTERVAL
     );
 
+
     coins.update(
       dt,
       speed,
       SPAWN_INTERVAL
     );
 
+
     vibepack.update(
       dt,
       speed
     );
+
 
     powerups.update(
       dt,
       speed
     );
 
+
     distance +=
       speed * dt;
+
 
     score =
       distance * 0.1;
 
+
     const playerBounds =
       player.getBounds();
 
-    // Powerups
+
+    /* =====================================================
+       POWER-UP COLLECTION
+       ===================================================== */
+
     const pickedUpType =
       powerups.collect(
         playerBounds
       );
 
+
     if (
       pickedUpType ===
       SHIELD_TYPE
     ) {
-      player.hasShield =
-        true;
+      // Normal collected shield.
+      player.startShield(
+        SHIELD_DURATION
+      );
+
 
       audio.play(
         'shield'
       );
 
+
       ui.showToast(
-        'SHIELD READY'
+        `🛡️ SHIELD — ${SHIELD_DURATION}s`
       );
 
     } else if (
@@ -902,24 +1172,32 @@ function loop(timestamp) {
         SPEED_BOOST_DURATION *
         1000;
 
+
       audio.play(
         'boost'
       );
 
+
       ui.showToast(
-        'SPEED BOOST'
+        '⚡ SPEED BOOST'
       );
     }
+
 
     ui.setShieldIcon(
       player.hasShield
     );
 
+
     ui.setBoostIcon(
       speedBoostTimer > 0
     );
 
-    // VIBE PACK
+
+    /* =====================================================
+       VIBE PACK COLLECTION
+       ===================================================== */
+
     if (
       vibepack.collect(
         playerBounds
@@ -929,17 +1207,21 @@ function loop(timestamp) {
         VIBE_PACK_DURATION *
         (character.boostMul || 1);
 
+
       player.startFlight(
         duration
       );
+
 
       audio.play(
         'vibepack'
       );
 
+
       ui.showToast(
-        'VIBE PACK ACTIVATED'
+        '🎒 VIBE PACK ACTIVATED'
       );
+
 
       progress =
         saveProgress({
@@ -948,7 +1230,11 @@ function loop(timestamp) {
         });
     }
 
-    // Coins
+
+    /* =====================================================
+       COINS
+       ===================================================== */
+
     const {
       collectedCount,
       comboCount,
@@ -956,8 +1242,10 @@ function loop(timestamp) {
     } =
       coins.collect(
         playerBounds,
-        character.coinMul || 1
+        character.coinMul ||
+          1
       );
+
 
     if (
       collectedCount > 0
@@ -973,15 +1261,21 @@ function loop(timestamp) {
       );
     }
 
+
     ui.updateCoins(
       runCoins
     );
+
 
     ui.showCombo(
       comboCount
     );
 
-    // VIBE PACK BAR
+
+    /* =====================================================
+       VIBE PACK HUD
+       ===================================================== */
+
     if (
       player.isFlying
     ) {
@@ -989,26 +1283,34 @@ function loop(timestamp) {
         player.flightTimer /
           player.flightDuration
       );
+
     } else {
       if (
         ui._wasFlying
       ) {
         ui.showToast(
-          'VIBE PACK DEPLETED'
+          '🎒 VIBE PACK DEPLETED'
         );
       }
+
 
       ui.hideVibePackBar();
     }
 
+
     ui._wasFlying =
       player.isFlying;
+
 
     ui.updateScore(
       Math.floor(score)
     );
 
-    // Obstacle collision
+
+    /* =====================================================
+       OBSTACLE COLLISION
+       ===================================================== */
+
     if (
       !player.isFlying
     ) {
@@ -1018,41 +1320,51 @@ function loop(timestamp) {
         obstacles.obstacles.length;
         i++
       ) {
-        const o =
+        const obstacle =
           obstacles.obstacles[i];
+
 
         if (
           checkCollision(
             playerBounds,
-            o
+            obstacle
           )
         ) {
           if (
             player.hasShield
           ) {
+            // Shield absorbs the hit.
             player.hasShield =
               false;
+
+            player.shieldTimer =
+              0;
+
 
             ui.setShieldIcon(
               false
             );
+
 
             obstacles.obstacles.splice(
               i,
               1
             );
 
+
             audio.play(
               'shield'
             );
 
+
             ui.showToast(
-              'SHIELD ABSORBED HIT'
+              '🛡️ SHIELD ABSORBED HIT'
             );
 
           } else {
             endGame();
           }
+
 
           break;
         }
@@ -1060,26 +1372,40 @@ function loop(timestamp) {
     }
   }
 
+
   drawBackground();
 
+
   obstacles.draw(ctx);
+
   coins.draw(ctx);
+
   vibepack.draw(ctx);
+
   powerups.draw(ctx);
+
   player.draw(ctx);
+
 
   requestAnimationFrame(
     loop
   );
 }
 
+
+/* =========================================================
+   INITIAL UI
+   ========================================================= */
+
 ui.setDayNightIcon(
   isDayMode
 );
 
+
 ui.showStart(
   progress.bestScore
 );
+
 
 requestAnimationFrame(
   loop
