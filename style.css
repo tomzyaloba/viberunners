@@ -1,6 +1,9 @@
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   width: 100%;
@@ -28,10 +31,19 @@ html, body {
 }
 
 @media (min-width: 700px) {
-  #game-canvas { border-radius: 12px; box-shadow: 0 0 60px rgba(57, 255, 206, 0.15); }
+  #game-canvas {
+    border-radius: 12px;
+    box-shadow: 0 0 60px rgba(57, 255, 206, 0.15);
+  }
 }
 
-.hidden { display: none !important; }
+.hidden {
+  display: none !important;
+}
+
+/* =========================================================
+   HUD
+   ========================================================= */
 
 #hud {
   position: absolute;
@@ -44,103 +56,6 @@ html, body {
   text-shadow: 0 0 10px rgba(57, 255, 206, 0.6);
   pointer-events: none;
 }
-
-.screen {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 24px;
-  background: radial-gradient(ellipse at 50% 30%, rgba(124, 58, 237, 0.25), transparent 60%), rgba(5, 3, 15, 0.92);
-  color: #fff;
-}
-
-.title {
-  font-size: clamp(40px, 10vw, 72px);
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  margin: 0;
-  background: linear-gradient(90deg, #39ffce, #7c3aed);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.title-sm {
-  font-size: clamp(26px, 6vw, 38px);
-  font-weight: 900;
-  margin: 0 0 18px;
-  color: #ff4d6d;
-}
-
-.subtitle {
-  font-weight: 700;
-  letter-spacing: 0.25em;
-  color: #22d3ee;
-  margin: 8px 0 4px;
-  font-size: clamp(12px, 2.5vw, 15px);
-}
-
-.desc {
-  color: rgba(255, 255, 255, 0.6);
-  margin: 0 0 32px;
-  font-size: clamp(13px, 2.5vw, 15px);
-}
-
-.btn-primary {
-  font-family: inherit;
-  font-weight: 800;
-  font-size: clamp(16px, 3vw, 20px);
-  letter-spacing: 0.05em;
-  color: #05030f;
-  background: linear-gradient(90deg, #39ffce, #22d3ee);
-  border: none;
-  border-radius: 999px;
-  padding: 16px 48px;
-  cursor: pointer;
-  box-shadow: 0 0 24px rgba(57, 255, 206, 0.4);
-  transition: transform 0.12s ease;
-}
-
-.btn-primary:hover { transform: scale(1.05); }
-
-.btn-primary:active { transform: scale(0.96); }
-
-.hint {
-  margin-top: 20px;
-  font-size: clamp(11px, 2vw, 13px);
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.credit {
-  position: absolute;
-  bottom: max(18px, env(safe-area-inset-bottom));
-  font-size: 11px;
-  letter-spacing: 0.05em;
-  color: rgba(255, 255, 255, 0.35);
-}
-
-.stat-row {
-  display: flex;
-  gap: 16px;
-  align-items: baseline;
-  font-weight: 800;
-  font-size: clamp(20px, 5vw, 28px);
-  margin-bottom: 28px;
-  color: #39ffce;
-}
-
-.stat-row span:first-child {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.5);
-  font-weight: 700;
-  letter-spacing: 0.1em;
-}
-
-/* --- Upgrade additions below: coins, VIBE PACK, audio, characters, testnet --- */
 
 #hud-coins {
   margin-top: 4px;
@@ -189,6 +104,249 @@ html, body {
   filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4));
 }
 
+/* =========================================================
+   SCREENS
+   ========================================================= */
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+  background:
+    radial-gradient(
+      ellipse at 50% 30%,
+      rgba(124, 58, 237, 0.25),
+      transparent 60%
+    ),
+    rgba(5, 3, 15, 0.92);
+  color: #fff;
+}
+
+/* =========================================================
+   TITLES
+   ========================================================= */
+
+.title {
+  font-size: clamp(40px, 10vw, 72px);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  margin: 0;
+  background: linear-gradient(
+    90deg,
+    #39ffce,
+    #7c3aed
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.title-sm {
+  font-size: clamp(26px, 6vw, 38px);
+  font-weight: 900;
+  margin: 0 0 18px;
+  color: #ff4d6d;
+}
+
+.subtitle {
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  color: #22d3ee;
+  margin: 8px 0 4px;
+  font-size: clamp(12px, 2.5vw, 15px);
+}
+
+.desc {
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 32px;
+  font-size: clamp(13px, 2.5vw, 15px);
+}
+
+/* =========================================================
+   PRIMARY BUTTON
+   ========================================================= */
+
+.btn-primary {
+  font-family: inherit;
+  font-weight: 800;
+  font-size: clamp(16px, 3vw, 20px);
+  letter-spacing: 0.05em;
+  color: #05030f;
+  background: linear-gradient(
+    90deg,
+    #39ffce,
+    #22d3ee
+  );
+  border: none;
+  border-radius: 999px;
+  padding: 16px 48px;
+  cursor: pointer;
+  box-shadow: 0 0 24px rgba(57, 255, 206, 0.4);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+.btn-primary:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 32px rgba(57, 255, 206, 0.6);
+}
+
+.btn-primary:active {
+  transform: scale(0.96);
+}
+
+/* =========================================================
+   SECONDARY BUTTONS
+   ========================================================= */
+
+.btn-secondary {
+  font-family: inherit;
+  font-weight: 700;
+  font-size: clamp(12px, 2.5vw, 14px);
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    transform 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(57, 255, 206, 0.55);
+}
+
+.btn-secondary:active {
+  transform: scale(0.96);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   DAY / NIGHT SWITCH
+   ========================================================= */
+
+#day-night-btn {
+  margin-top: 12px;
+  min-width: 145px;
+  border-color: rgba(255, 210, 63, 0.45);
+  background: rgba(255, 210, 63, 0.08);
+}
+
+#day-night-btn:hover {
+  background: rgba(255, 210, 63, 0.16);
+  border-color: rgba(255, 210, 63, 0.75);
+}
+
+/* =========================================================
+   HOME BUTTON
+   ========================================================= */
+
+#home-btn {
+  font-family: inherit;
+  font-weight: 700;
+  font-size: clamp(12px, 2.5vw, 14px);
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  padding: 11px 30px;
+  margin-top: 10px;
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    transform 0.12s ease,
+    border-color 0.12s ease;
+}
+
+#home-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(57, 255, 206, 0.55);
+}
+
+#home-btn:active {
+  transform: scale(0.96);
+}
+
+/* =========================================================
+   MENU
+   ========================================================= */
+
+.menu-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+/* =========================================================
+   HINT / CREDIT
+   ========================================================= */
+
+.hint {
+  margin-top: 20px;
+  font-size: clamp(11px, 2vw, 13px);
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.credit {
+  position: absolute;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* =========================================================
+   SCORE
+   ========================================================= */
+
+.best-score {
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-top: -8px;
+  margin-bottom: 18px;
+  font-size: clamp(11px, 2.2vw, 13px);
+}
+
+.stat-row {
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+  font-weight: 800;
+  font-size: clamp(20px, 5vw, 28px);
+  margin-bottom: 28px;
+  color: #39ffce;
+}
+
+.stat-row span:first-child {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+/* =========================================================
+   MUTE BUTTON
+   ========================================================= */
+
 .icon-btn {
   position: absolute;
   top: max(16px, env(safe-area-inset-top));
@@ -202,11 +360,29 @@ html, body {
   font-size: 18px;
   color: #fff;
   cursor: pointer;
+  transition:
+    background 0.12s ease,
+    transform 0.12s ease;
 }
+
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.icon-btn:active {
+  transform: scale(0.92);
+}
+
+/* =========================================================
+   TOAST
+   ========================================================= */
 
 #toast {
   position: absolute;
-  top: max(64px, calc(env(safe-area-inset-top) + 48px));
+  top: max(
+    64px,
+    calc(env(safe-area-inset-top) + 48px)
+  );
   left: 50%;
   transform: translateX(-50%);
   z-index: 6;
@@ -222,38 +398,9 @@ html, body {
   box-shadow: 0 0 24px rgba(57, 255, 206, 0.25);
 }
 
-.best-score {
-  color: rgba(255, 255, 255, 0.6);
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  margin-top: -8px;
-  margin-bottom: 18px;
-  font-size: clamp(11px, 2.2vw, 13px);
-}
-
-.menu-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-  margin-top: 16px;
-}
-
-.btn-secondary {
-  font-family: inherit;
-  font-weight: 700;
-  font-size: clamp(12px, 2.5vw, 14px);
-  letter-spacing: 0.04em;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 999px;
-  padding: 10px 20px;
-  cursor: pointer;
-  transition: background 0.12s ease;
-}
-.btn-secondary:hover { background: rgba(255, 255, 255, 0.16); }
-.btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+/* =========================================================
+   CHARACTER SELECT
+   ========================================================= */
 
 .character-list {
   display: flex;
@@ -274,11 +421,40 @@ html, body {
   padding: 12px 16px;
   color: #fff;
   cursor: pointer;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease;
 }
-.character-card.selected { border-color: #39ffce; box-shadow: 0 0 16px rgba(57, 255, 206, 0.3); }
-.character-card.locked { opacity: 0.5; cursor: not-allowed; }
-.character-name { font-weight: 800; letter-spacing: 0.03em; }
-.character-tagline { font-size: 12px; color: rgba(255, 255, 255, 0.6); margin-top: 2px; }
+
+.character-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.character-card.selected {
+  border-color: #39ffce;
+  box-shadow:
+    0 0 16px rgba(57, 255, 206, 0.3);
+}
+
+.character-card.locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.character-name {
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+.character-tagline {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 2px;
+}
+
+/* =========================================================
+   TESTNET
+   ========================================================= */
 
 .testnet-status {
   width: min(320px, 90vw);
@@ -292,8 +468,16 @@ html, body {
   padding: 6px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
-.stat-row-sm span:first-child { color: rgba(255, 255, 255, 0.5); letter-spacing: 0.08em; }
-.stat-row-sm span:last-child { color: #39ffce; font-weight: 700; }
+
+.stat-row-sm span:first-child {
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.08em;
+}
+
+.stat-row-sm span:last-child {
+  color: #39ffce;
+  font-weight: 700;
+}
 
 .notice {
   width: min(360px, 90vw);
@@ -326,4 +510,47 @@ html, body {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
   padding: 6px 10px;
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 500px) {
+  .screen {
+    padding: 18px;
+  }
+
+  .title {
+    font-size: clamp(36px, 12vw, 56px);
+  }
+
+  .desc {
+    margin-bottom: 22px;
+  }
+
+  .btn-primary {
+    padding: 14px 40px;
+  }
+
+  .menu-row {
+    width: 100%;
+    max-width: 360px;
+  }
+
+  .menu-row .btn-secondary {
+    flex: 1 1 auto;
+  }
+
+  #day-night-btn {
+    margin-top: 12px;
+  }
+
+  #home-btn {
+    padding: 10px 28px;
+  }
+
+  .credit {
+    bottom: max(12px, env(safe-area-inset-bottom));
+  }
 }
