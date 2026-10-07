@@ -338,6 +338,12 @@ window.addEventListener(
 ui.onPlay(startGame);
 
 ui.onRestart(startGame);
+ui.onHome(() => {
+  state = STATE.MENU;
+  resetGame();
+  audio.stopMusic();
+  ui.showStart(progress.bestScore);
+});
 
 ui.onMuteToggle(() => {
   const next =
