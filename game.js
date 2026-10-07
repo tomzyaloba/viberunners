@@ -2,7 +2,11 @@ import { Player } from './player.js';
 import { ObstacleManager } from './obstacles.js';
 import { UI } from './ui.js';
 import { CoinManager } from './coins.js';
-import { VibePackManager, VIBE_PACK_DURATION } from './vibepack.js';
+import {
+  VibePackManager,
+  VIBE_PACK_DURATION
+} from './vibepack.js';
+
 import {
   PowerUpManager,
   SHIELD_TYPE,
@@ -10,10 +14,19 @@ import {
   SPEED_BOOST_DURATION,
   SPEED_BOOST_MULTIPLIER
 } from './powerups.js';
+
 import { AudioManager } from './audio.js';
-import { loadProgress, saveProgress } from './storage.js';
+import {
+  loadProgress,
+  saveProgress
+} from './storage.js';
+
 import { getCharacter } from './characters.js';
-import { WalletManager, UNLOCK_RULES } from './web3.js';
+
+import {
+  WalletManager,
+  UNLOCK_RULES
+} from './web3.js';
 
 const GAME_WIDTH = 900;
 const GAME_HEIGHT = 506;
@@ -26,14 +39,16 @@ const DIFFICULTY_RAMP_DISTANCE = 7000;
 const MAX_SPEED_MULTIPLIER = 1.7;
 
 function speedMultiplierForDistance(distance) {
-  const t = Math.min(
-    distance / DIFFICULTY_RAMP_DISTANCE,
-    1
-  );
+  const t =
+    Math.min(
+      distance / DIFFICULTY_RAMP_DISTANCE,
+      1
+    );
 
   return (
     1 +
-    t * (MAX_SPEED_MULTIPLIER - 1)
+    t *
+      (MAX_SPEED_MULTIPLIER - 1)
   );
 }
 
@@ -49,21 +64,25 @@ const ACHIEVEMENTS = [
     message: 'ACHIEVEMENT: First Vibe Run',
     check: (p) => p.gamesPlayed >= 1
   },
+
   {
     id: 'coin_collector',
     message: 'ACHIEVEMENT: Vibe Collector (100 VIBE)',
     check: (p) => p.totalVibeCoins >= 100
   },
+
   {
     id: 'high_scorer',
     message: 'ACHIEVEMENT: Score 5000+',
     check: (p) => p.bestScore >= 5000
   },
+
   {
     id: 'flyer',
     message: 'ACHIEVEMENT: First Flight',
     check: (p) => p.usedVibePack
   },
+
   {
     id: 'testnet_builder',
     message:
@@ -76,7 +95,8 @@ const ACHIEVEMENTS = [
 const canvas =
   document.getElementById('game-canvas');
 
-const ctx = canvas.getContext('2d');
+const ctx =
+  canvas.getContext('2d');
 
 function fitCanvas() {
   const dpr =
@@ -118,7 +138,11 @@ window.addEventListener(
 
 fitCanvas();
 
-let progress = loadProgress();
+let progress =
+  loadProgress();
+
+let isDayMode =
+  progress.dayMode ?? true;
 
 const ui = new UI();
 
@@ -162,24 +186,23 @@ const player =
     )
   );
 
-let state = STATE.MENU;
+let state =
+  STATE.MENU;
 
 let score = 0;
 let distance = 0;
 let runCoins = 0;
 let lastTime = 0;
 
-// IMPORTANT:
-// This value is milliseconds.
 let speedBoostTimer = 0;
 
 ui.setMuteIcon(
   progress.soundEnabled
 );
 
-// ---------------------------------------------------------
-// RESET
-// ---------------------------------------------------------
+ui.setDayNightIcon(
+  isDayMode
+);
 
 function resetGame() {
   player.setCharacter(
@@ -188,7 +211,9 @@ function resetGame() {
     )
   );
 
-  player.reset(GROUND_Y);
+  player.reset(
+    GROUND_Y
+  );
 
   obstacles.reset();
   coins.reset();
@@ -198,36 +223,29 @@ function resetGame() {
   score = 0;
   distance = 0;
   runCoins = 0;
-
   speedBoostTimer = 0;
 }
-
-// ---------------------------------------------------------
-// START GAME
-// ---------------------------------------------------------
 
 function startGame() {
   resetGame();
 
-  state = STATE.PLAYING;
+  state =
+    STATE.PLAYING;
 
   ui.showGameplay();
 
-  // Browser allows audio because this happens
-  // after the player clicks PLAY.
   audio.init();
   audio.startMusic();
 }
 
-// ---------------------------------------------------------
-// ACHIEVEMENTS
-// ---------------------------------------------------------
-
 function unlockAchievements() {
-  let unlockedSomething = false;
+  let unlockedSomething =
+    false;
 
   const achieved =
-    new Set(progress.achievements);
+    new Set(
+      progress.achievements
+    );
 
   for (const a of ACHIEVEMENTS) {
     if (
@@ -236,52 +254,55 @@ function unlockAchievements() {
     ) {
       achieved.add(a.id);
 
-      ui.showToast(a.message);
+      ui.showToast(
+        a.message
+      );
 
       unlockedSomething = true;
     }
   }
 
   if (unlockedSomething) {
-    progress = saveProgress({
-      achievements:
-        Array.from(achieved)
-    });
+    progress =
+      saveProgress({
+        achievements:
+          Array.from(achieved)
+      });
   }
 }
 
-// ---------------------------------------------------------
-// END GAME
-// ---------------------------------------------------------
-
 function endGame() {
-  state = STATE.GAME_OVER;
+  state =
+    STATE.GAME_OVER;
 
   const finalScore =
     Math.floor(score);
 
-  progress = saveProgress({
-    bestScore:
-      Math.max(
-        progress.bestScore,
-        finalScore
-      ),
+  progress =
+    saveProgress({
+      bestScore:
+        Math.max(
+          progress.bestScore,
+          finalScore
+        ),
 
-    totalVibeCoins:
-      progress.totalVibeCoins +
-      runCoins,
+      totalVibeCoins:
+        progress.totalVibeCoins +
+        runCoins,
 
-    bestRunCoins:
-      Math.max(
-        progress.bestRunCoins,
-        runCoins
-      ),
+      bestRunCoins:
+        Math.max(
+          progress.bestRunCoins,
+          runCoins
+        ),
 
-    gamesPlayed:
-      progress.gamesPlayed + 1
-  });
+      gamesPlayed:
+        progress.gamesPlayed + 1
+    });
 
-  audio.play('gameover');
+  audio.play(
+    'gameover'
+  );
 
   unlockAchievements();
 
@@ -294,10 +315,6 @@ function endGame() {
   );
 }
 
-// ---------------------------------------------------------
-// JUMP
-// ---------------------------------------------------------
-
 function handleJumpInput(e) {
   if (e) {
     e.preventDefault();
@@ -308,7 +325,9 @@ function handleJumpInput(e) {
   ) {
     player.jump();
 
-    if (!player.isFlying) {
+    if (
+      !player.isFlying
+    ) {
       audio.play('jump');
     }
   }
@@ -331,44 +350,80 @@ window.addEventListener(
   }
 );
 
-// ---------------------------------------------------------
-// UI
-// ---------------------------------------------------------
+ui.onPlay(
+  startGame
+);
 
-ui.onPlay(startGame);
+ui.onRestart(
+  startGame
+);
 
-ui.onRestart(startGame);
+// HOME BUTTON
 ui.onHome(() => {
-  state = STATE.MENU;
+  state =
+    STATE.MENU;
+
   resetGame();
+
   audio.stopMusic();
-  ui.showStart(progress.bestScore);
+
+  ui.showStart(
+    progress.bestScore
+  );
+});
+
+// DAY / NIGHT BUTTON
+ui.onDayNightToggle(() => {
+  isDayMode =
+    !isDayMode;
+
+  progress =
+    saveProgress({
+      dayMode:
+        isDayMode
+    });
+
+  ui.setDayNightIcon(
+    isDayMode
+  );
+
+  ui.showToast(
+    isDayMode
+      ? '☀️ DAY MODE'
+      : '🌙 NIGHT MODE'
+  );
 });
 
 ui.onMuteToggle(() => {
   const next =
     !progress.soundEnabled;
 
-  progress = saveProgress({
-    soundEnabled: next
-  });
+  progress =
+    saveProgress({
+      soundEnabled:
+        next
+    });
 
-  audio.setEnabled(next);
+  audio.setEnabled(
+    next
+  );
 
-  ui.setMuteIcon(next);
+  ui.setMuteIcon(
+    next
+  );
 });
 
-// ---------------------------------------------------------
-// CHARACTER MENU
-// ---------------------------------------------------------
+// --- Character menu --------------------------------------------------
 
 function openCharacterMenu() {
   ui.openCharacterMenu(
     progress,
     (id) => {
-      progress = saveProgress({
-        selectedCharacter: id
-      });
+      progress =
+        saveProgress({
+          selectedCharacter:
+            id
+        });
 
       player.setCharacter(
         getCharacter(id)
@@ -387,35 +442,43 @@ ui.onCloseCharacterMenu(
   () => ui.closeCharacterMenu()
 );
 
-// ---------------------------------------------------------
-// TESTNET
-// ---------------------------------------------------------
+// --- Testnet menu ----------------------------------------------------
 
 async function refreshUnlocksFromChain() {
   if (!wallet.connected) {
     return;
   }
 
-  const newlyUnlockedCharacters = [
-    ...progress.unlockedCharacters
-  ];
+  const newlyUnlockedCharacters =
+    [
+      ...progress.unlockedCharacters
+    ];
 
-  const newlyUnlockedPowerUps = [
-    ...progress.unlockedPowerUps
-  ];
+  const newlyUnlockedPowerUps =
+    [
+      ...progress.unlockedPowerUps
+    ];
 
   let changed = false;
 
-  for (const rule of UNLOCK_RULES) {
+  for (
+    const rule of UNLOCK_RULES
+  ) {
     const result =
-      await wallet.checkEligibility(rule);
+      await wallet.checkEligibility(
+        rule
+      );
 
-    if (result.eligible) {
+    if (
+      result.eligible
+    ) {
       if (
         !newlyUnlockedCharacters.includes(
           rule.reward
         ) &&
-        getCharacter(rule.reward).id ===
+        getCharacter(
+          rule.reward
+        ).id ===
           rule.reward
       ) {
         newlyUnlockedCharacters.push(
@@ -428,13 +491,14 @@ async function refreshUnlocksFromChain() {
   }
 
   if (changed) {
-    progress = saveProgress({
-      unlockedCharacters:
-        newlyUnlockedCharacters,
+    progress =
+      saveProgress({
+        unlockedCharacters:
+          newlyUnlockedCharacters,
 
-      unlockedPowerUps:
-        newlyUnlockedPowerUps
-    });
+        unlockedPowerUps:
+          newlyUnlockedPowerUps
+      });
 
     ui.showToast(
       'TESTNET BUILDER UNLOCKED'
@@ -456,7 +520,8 @@ ui.onOpenTestnetMenu(
 );
 
 ui.onCloseTestnetMenu(
-  () => ui.closeTestnetMenu()
+  () =>
+    ui.closeTestnetMenu()
 );
 
 ui.onConnectWallet(
@@ -475,14 +540,16 @@ ui.onConnectWallet(
   }
 );
 
-ui.onDisconnectWallet(() => {
-  wallet.disconnect();
+ui.onDisconnectWallet(
+  () => {
+    wallet.disconnect();
 
-  ui.renderTestnetState(
-    wallet,
-    progress
-  );
-});
+    ui.renderTestnetState(
+      wallet,
+      progress
+    );
+  }
+);
 
 ui.onSwitchNetwork(
   async () => {
@@ -495,9 +562,7 @@ ui.onSwitchNetwork(
   }
 );
 
-// ---------------------------------------------------------
-// BACKGROUND
-// ---------------------------------------------------------
+// --- Rendering -------------------------------------------------------
 
 function drawBackground() {
   const grad =
@@ -508,38 +573,194 @@ function drawBackground() {
       GAME_HEIGHT
     );
 
-  grad.addColorStop(
-    0,
-    '#0b1026'
-  );
+  if (isDayMode) {
+    // ☀️ DAY
 
-  grad.addColorStop(
-    1,
-    '#1a1040'
-  );
+    grad.addColorStop(
+      0,
+      '#87CEEB'
+    );
 
-  ctx.fillStyle = grad;
+    grad.addColorStop(
+      0.55,
+      '#BFE9FF'
+    );
 
-  ctx.fillRect(
-    0,
-    0,
-    GAME_WIDTH,
-    GAME_HEIGHT
-  );
+    grad.addColorStop(
+      1,
+      '#EAF9FF'
+    );
 
-  ctx.fillStyle =
-    '#120a2e';
+    ctx.fillStyle =
+      grad;
 
-  ctx.fillRect(
-    0,
-    GROUND_Y,
-    GAME_WIDTH,
-    GAME_HEIGHT - GROUND_Y
-  );
+    ctx.fillRect(
+      0,
+      0,
+      GAME_WIDTH,
+      GAME_HEIGHT
+    );
 
-  ctx.strokeStyle =
-    '#39ffce';
+    // Sun
+    ctx.save();
 
+    ctx.fillStyle =
+      '#FFD93D';
+
+    ctx.shadowColor =
+      '#FFD93D';
+
+    ctx.shadowBlur =
+      30;
+
+    ctx.beginPath();
+
+    ctx.arc(
+      760,
+      85,
+      38,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fill();
+
+    ctx.restore();
+
+    // Day ground
+    ctx.fillStyle =
+      '#4C8C45';
+
+    ctx.fillRect(
+      0,
+      GROUND_Y,
+      GAME_WIDTH,
+      GAME_HEIGHT -
+        GROUND_Y
+    );
+
+    ctx.strokeStyle =
+      '#2F5E2A';
+
+  } else {
+    // 🌙 NIGHT
+
+    grad.addColorStop(
+      0,
+      '#050816'
+    );
+
+    grad.addColorStop(
+      0.55,
+      '#0B1230'
+    );
+
+    grad.addColorStop(
+      1,
+      '#19113D'
+    );
+
+    ctx.fillStyle =
+      grad;
+
+    ctx.fillRect(
+      0,
+      0,
+      GAME_WIDTH,
+      GAME_HEIGHT
+    );
+
+    // Moon
+    ctx.save();
+
+    ctx.fillStyle =
+      '#F5F3CE';
+
+    ctx.shadowColor =
+      '#FFFFFF';
+
+    ctx.shadowBlur =
+      25;
+
+    ctx.beginPath();
+
+    ctx.arc(
+      760,
+      85,
+      34,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fill();
+
+    ctx.fillStyle =
+      '#0B1230';
+
+    ctx.beginPath();
+
+    ctx.arc(
+      775,
+      75,
+      34,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fill();
+
+    ctx.restore();
+
+    // Stars
+    ctx.fillStyle =
+      '#FFFFFF';
+
+    const stars = [
+      [90, 70],
+      [170, 125],
+      [260, 55],
+      [350, 105],
+      [450, 65],
+      [540, 130],
+      [630, 45],
+      [700, 150],
+      [820, 125],
+      [860, 60]
+    ];
+
+    for (
+      const [x, y] of stars
+    ) {
+      ctx.beginPath();
+
+      ctx.arc(
+        x,
+        y,
+        2,
+        0,
+        Math.PI * 2
+      );
+
+      ctx.fill();
+    }
+
+    // Night ground
+    ctx.fillStyle =
+      '#120A2E';
+
+    ctx.fillRect(
+      0,
+      GROUND_Y,
+      GAME_WIDTH,
+      GAME_HEIGHT -
+        GROUND_Y
+    );
+
+    ctx.strokeStyle =
+      '#39FFCE';
+  }
+
+  // Ground line
   ctx.lineWidth = 3;
 
   ctx.beginPath();
@@ -557,10 +778,6 @@ function drawBackground() {
   ctx.stroke();
 }
 
-// ---------------------------------------------------------
-// COLLISION
-// ---------------------------------------------------------
-
 function checkCollision(a, b) {
   return (
     a.x <
@@ -574,24 +791,24 @@ function checkCollision(a, b) {
   );
 }
 
-// ---------------------------------------------------------
-// GAME LOOP
-// ---------------------------------------------------------
-
 function loop(timestamp) {
   if (!lastTime) {
-    lastTime = timestamp;
+    lastTime =
+      timestamp;
   }
 
   let dt =
-    (timestamp - lastTime) / 1000;
+    (timestamp - lastTime) /
+    1000;
 
-  dt = Math.min(
-    dt,
-    0.05
-  );
+  dt =
+    Math.min(
+      dt,
+      0.05
+    );
 
-  lastTime = timestamp;
+  lastTime =
+    timestamp;
 
   if (
     state === STATE.PLAYING
@@ -599,8 +816,9 @@ function loop(timestamp) {
     const character =
       player.character;
 
-    // SPEED BOOST TIMER
-    if (speedBoostTimer > 0) {
+    if (
+      speedBoostTimer > 0
+    ) {
       speedBoostTimer =
         Math.max(
           0,
@@ -655,10 +873,7 @@ function loop(timestamp) {
     const playerBounds =
       player.getBounds();
 
-    // -----------------------------------------------------
-    // POWERUPS
-    // -----------------------------------------------------
-
+    // Powerups
     const pickedUpType =
       powerups.collect(
         playerBounds
@@ -668,26 +883,28 @@ function loop(timestamp) {
       pickedUpType ===
       SHIELD_TYPE
     ) {
-      player.hasShield = true;
+      player.hasShield =
+        true;
 
-      audio.play('shield');
+      audio.play(
+        'shield'
+      );
 
       ui.showToast(
         'SHIELD READY'
       );
-    }
 
-    else if (
+    } else if (
       pickedUpType ===
       SPEED_BOOST_TYPE
     ) {
-      // IMPORTANT FIX:
-      // Convert seconds to milliseconds.
       speedBoostTimer =
         SPEED_BOOST_DURATION *
         1000;
 
-      audio.play('boost');
+      audio.play(
+        'boost'
+      );
 
       ui.showToast(
         'SPEED BOOST'
@@ -702,10 +919,7 @@ function loop(timestamp) {
       speedBoostTimer > 0
     );
 
-    // -----------------------------------------------------
     // VIBE PACK
-    // -----------------------------------------------------
-
     if (
       vibepack.collect(
         playerBounds
@@ -719,21 +933,22 @@ function loop(timestamp) {
         duration
       );
 
-      audio.play('vibepack');
+      audio.play(
+        'vibepack'
+      );
 
       ui.showToast(
         'VIBE PACK ACTIVATED'
       );
 
-      progress = saveProgress({
-        usedVibePack: true
-      });
+      progress =
+        saveProgress({
+          usedVibePack:
+            true
+        });
     }
 
-    // -----------------------------------------------------
-    // COINS
-    // -----------------------------------------------------
-
+    // Coins
     const {
       collectedCount,
       comboCount,
@@ -753,9 +968,9 @@ function loop(timestamp) {
       score +=
         scoreBonus;
 
-      // This is now safe because
-      // AudioManager has play('coin').
-      audio.play('coin');
+      audio.play(
+        'coin'
+      );
     }
 
     ui.updateCoins(
@@ -766,19 +981,18 @@ function loop(timestamp) {
       comboCount
     );
 
-    // -----------------------------------------------------
     // VIBE PACK BAR
-    // -----------------------------------------------------
-
-    if (player.isFlying) {
+    if (
+      player.isFlying
+    ) {
       ui.showVibePackBar(
         player.flightTimer /
           player.flightDuration
       );
-    }
-
-    else {
-      if (ui._wasFlying) {
+    } else {
+      if (
+        ui._wasFlying
+      ) {
         ui.showToast(
           'VIBE PACK DEPLETED'
         );
@@ -794,14 +1008,14 @@ function loop(timestamp) {
       Math.floor(score)
     );
 
-    // -----------------------------------------------------
-    // OBSTACLE COLLISION
-    // -----------------------------------------------------
-
-    if (!player.isFlying) {
+    // Obstacle collision
+    if (
+      !player.isFlying
+    ) {
       for (
         let i = 0;
-        i < obstacles.obstacles.length;
+        i <
+        obstacles.obstacles.length;
         i++
       ) {
         const o =
@@ -835,9 +1049,8 @@ function loop(timestamp) {
             ui.showToast(
               'SHIELD ABSORBED HIT'
             );
-          }
 
-          else {
+          } else {
             endGame();
           }
 
@@ -847,20 +1060,12 @@ function loop(timestamp) {
     }
   }
 
-  // -------------------------------------------------------
-  // DRAW
-  // -------------------------------------------------------
-
   drawBackground();
 
   obstacles.draw(ctx);
-
   coins.draw(ctx);
-
   vibepack.draw(ctx);
-
   powerups.draw(ctx);
-
   player.draw(ctx);
 
   requestAnimationFrame(
@@ -868,9 +1073,9 @@ function loop(timestamp) {
   );
 }
 
-// ---------------------------------------------------------
-// INITIALIZE
-// ---------------------------------------------------------
+ui.setDayNightIcon(
+  isDayMode
+);
 
 ui.showStart(
   progress.bestScore
