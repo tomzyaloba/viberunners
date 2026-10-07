@@ -1,42 +1,54 @@
 export class ObstacleManager {
-  constructor(groundY, gameWidth) {
-    this.groundY = groundY;
-    this.gameWidth = gameWidth;
+  constructor(canvas) {
+    this.canvas = canvas;
     this.obstacles = [];
     this.spawnTimer = 0;
+    this.spawnInterval = 1200;
+    this.speed = 6;
   }
 
   reset() {
     this.obstacles = [];
     this.spawnTimer = 0;
+    this.spawnInterval = 1200;
+    this.speed = 6;
   }
 
-  update(dt, speed, spawnInterval = 1.5) {
-    this.spawnTimer += dt;
+  spawn() {
+    const width = 40 + Math.random() * 35;
+    const height = 40 + Math.random() * 50;
 
-    // Spawn a new obstacle
-    if (this.spawnTimer >= spawnInterval) {
+    this.obstacles.push({
+      x: this.canvas.width + width,
+      y: this.canvas.height - height - 40,
+      width,
+      height,
+      speed: this.speed
+    });
+  }
+
+  update(deltaTime) {
+    this.spawnTimer += deltaTime;
+
+    if (this.spawnTimer >= this.spawnInterval) {
+      this.spawn();
       this.spawnTimer = 0;
 
-      const height = 35 + Math.random() * 45;
-      const width = 25 + Math.random() * 25;
+      if (this.spawnInterval > 650) {
+        this.spawnInterval -= 10;
+      }
 
-      this.obstacles.push({
-        x: this.gameWidth + 20,
-        y: this.groundY - height,
-        width,
-        height
-      });
+      if (this.speed < 12) {
+        this.speed += 0.05;
+      }
     }
 
-    // Move obstacles
     for (const obstacle of this.obstacles) {
-      obstacle.x -= speed * dt;
+      obstacle.x -= obstacle.speed;
     }
 
-    // Remove obstacles that have left the screen
     this.obstacles = this.obstacles.filter(
-      obstacle => obstacle.x + obstacle.width > -50
+      obstacle => obstacle.x + obstacle.width > 0
     );
   }
 
@@ -44,8 +56,7 @@ export class ObstacleManager {
     for (const obstacle of this.obstacles) {
       ctx.save();
 
-      // Main obstacle
-      ctx.fillStyle = "#222";
+      ctx.fillStyle = '#222';
       ctx.fillRect(
         obstacle.x,
         obstacle.y,
@@ -53,16 +64,37 @@ export class ObstacleManager {
         obstacle.height
       );
 
-      // Simple highlight
-      ctx.fillStyle = "#555";
-      ctx.fillRect(
-        obstacle.x + 4,
-        obstacle.y + 4,
-        Math.max(4, obstacle.width * 0.2),
-        Math.max(4, obstacle.height - 8)
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(
+        obstacle.x,
+        obstacle.y,
+        obstacle.width,
+        obstacle.height
       );
 
       ctx.restore();
     }
+  }
+
+  getObstacles() {
+    return this.obstacles;
+  }
+
+  checkCollision(player) {
+    const padding = 6;
+
+    for (const obstacle of this.obstacles) {
+      if (
+        player.x + player.width - padding > obstacle.x &&
+        player.x + padding < obstacle.x + obstacle.width &&
+        player.y + player.height - padding > obstacle.y &&
+        player.y + padding < obstacle.y + obstacle.height
+      ) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }
