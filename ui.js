@@ -21,6 +21,7 @@ export class UI {
     this.playBtn = document.getElementById('play-btn');
     this.restartBtn = document.getElementById('restart-btn');
     this.homeBtn = document.getElementById('home-btn');
+    this.dayNightBtn = document.getElementById('day-night-btn');
 
     this.muteBtn = document.getElementById('mute-btn');
     this.toast = document.getElementById('toast');
@@ -56,6 +57,12 @@ export class UI {
   onHome(cb) {
     if (this.homeBtn) {
       this.homeBtn.addEventListener('click', cb);
+    }
+  }
+
+  onDayNightToggle(cb) {
+    if (this.dayNightBtn) {
+      this.dayNightBtn.addEventListener('click', cb);
     }
   }
 
@@ -103,8 +110,11 @@ export class UI {
     this.hud.classList.add('hidden');
     this.packHud.classList.add('hidden');
 
-    this.finalScoreEl.textContent = String(score).padStart(6, '0');
-    this.finalCoinsEl.textContent = String(coins).padStart(3, '0');
+    this.finalScoreEl.textContent =
+      String(score).padStart(6, '0');
+
+    this.finalCoinsEl.textContent =
+      String(coins).padStart(3, '0');
 
     this.gameOverScreen.classList.remove('hidden');
   }
@@ -166,7 +176,22 @@ export class UI {
   }
 
   setMuteIcon(enabled) {
-    this.muteBtn.textContent = enabled ? '🔊' : '🔇';
+    this.muteBtn.textContent =
+      enabled ? '🔊' : '🔇';
+  }
+
+  setDayNightIcon(isDay) {
+    if (!this.dayNightBtn) return;
+
+    this.dayNightBtn.textContent =
+      isDay ? '🌙 NIGHT' : '☀️ DAY';
+
+    this.dayNightBtn.setAttribute(
+      'aria-label',
+      isDay
+        ? 'Switch to night mode'
+        : 'Switch to day mode'
+    );
   }
 
   showToast(message) {
@@ -190,22 +215,26 @@ export class UI {
     this.characterList.innerHTML = '';
 
     for (const character of CHARACTERS) {
-      const unlocked = isCharacterUnlocked(character, progress);
+      const unlocked =
+        isCharacterUnlocked(character, progress);
 
       const card = document.createElement('button');
 
       card.className =
-        'character-card' + (unlocked ? '' : ' locked');
+        'character-card' +
+        (unlocked ? '' : ' locked');
 
       card.disabled = !unlocked;
 
       const title = document.createElement('div');
+
       title.className = 'character-name';
       title.textContent = character.name;
 
       card.appendChild(title);
 
       const tagline = document.createElement('div');
+
       tagline.className = 'character-tagline';
 
       tagline.textContent =
@@ -247,7 +276,8 @@ export class UI {
   }
 
   renderTestnetState(wallet, progress) {
-    const hasWallet = wallet.hasInjectedWallet();
+    const hasWallet =
+      wallet.hasInjectedWallet();
 
     this.testnetUnavailable.classList.toggle(
       'hidden',
@@ -298,6 +328,7 @@ export class UI {
 
       for (const rule of UNLOCK_RULES) {
         const row = document.createElement('div');
+
         row.className = 'unlock-row';
 
         const unlocked =
@@ -311,7 +342,9 @@ export class UI {
 
         row.textContent =
           (unlocked ? '✓ ' : '🔒 ') +
-          rule.id.replace(/_/g, ' ').toUpperCase() +
+          rule.id
+            .replace(/_/g, ' ')
+            .toUpperCase() +
           ' — ' +
           requirement;
 
@@ -329,7 +362,10 @@ function lockReason(character) {
       (r) => r.id === character.unlock.ruleId
     );
 
-    if (rule && rule.type === 'TOKEN_BALANCE') {
+    if (
+      rule &&
+      rule.type === 'TOKEN_BALANCE'
+    ) {
       return `🔒 Hold ${rule.minTokens} $VIBE on testnet`;
     }
 
