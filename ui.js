@@ -17,8 +17,10 @@ export class UI {
     this.gameOverScreen = document.getElementById('gameover-screen');
     this.finalScoreEl = document.getElementById('final-score');
     this.finalCoinsEl = document.getElementById('final-coins');
+
     this.playBtn = document.getElementById('play-btn');
     this.restartBtn = document.getElementById('restart-btn');
+    this.homeBtn = document.getElementById('home-btn');
 
     this.muteBtn = document.getElementById('mute-btn');
     this.toast = document.getElementById('toast');
@@ -43,17 +45,51 @@ export class UI {
     this.switchNetworkBtn = document.getElementById('switch-network-btn');
   }
 
-  onPlay(cb) { this.playBtn.addEventListener('click', cb); }
-  onRestart(cb) { this.restartBtn.addEventListener('click', cb); }
-  onMuteToggle(cb) { this.muteBtn.addEventListener('click', cb); }
+  onPlay(cb) {
+    this.playBtn.addEventListener('click', cb);
+  }
 
-  onOpenCharacterMenu(cb) { this.characterMenuBtn.addEventListener('click', cb); }
-  onCloseCharacterMenu(cb) { this.characterBackBtn.addEventListener('click', cb); }
-  onOpenTestnetMenu(cb) { this.testnetMenuBtn.addEventListener('click', cb); }
-  onCloseTestnetMenu(cb) { this.testnetBackBtn.addEventListener('click', cb); }
-  onConnectWallet(cb) { this.connectBtn.addEventListener('click', cb); }
-  onDisconnectWallet(cb) { this.disconnectBtn.addEventListener('click', cb); }
-  onSwitchNetwork(cb) { this.switchNetworkBtn.addEventListener('click', cb); }
+  onRestart(cb) {
+    this.restartBtn.addEventListener('click', cb);
+  }
+
+  onHome(cb) {
+    if (this.homeBtn) {
+      this.homeBtn.addEventListener('click', cb);
+    }
+  }
+
+  onMuteToggle(cb) {
+    this.muteBtn.addEventListener('click', cb);
+  }
+
+  onOpenCharacterMenu(cb) {
+    this.characterMenuBtn.addEventListener('click', cb);
+  }
+
+  onCloseCharacterMenu(cb) {
+    this.characterBackBtn.addEventListener('click', cb);
+  }
+
+  onOpenTestnetMenu(cb) {
+    this.testnetMenuBtn.addEventListener('click', cb);
+  }
+
+  onCloseTestnetMenu(cb) {
+    this.testnetBackBtn.addEventListener('click', cb);
+  }
+
+  onConnectWallet(cb) {
+    this.connectBtn.addEventListener('click', cb);
+  }
+
+  onDisconnectWallet(cb) {
+    this.disconnectBtn.addEventListener('click', cb);
+  }
+
+  onSwitchNetwork(cb) {
+    this.switchNetworkBtn.addEventListener('click', cb);
+  }
 
   showGameplay() {
     this.startScreen.classList.add('hidden');
@@ -66,8 +102,10 @@ export class UI {
   showGameOver(score, coins) {
     this.hud.classList.add('hidden');
     this.packHud.classList.add('hidden');
+
     this.finalScoreEl.textContent = String(score).padStart(6, '0');
     this.finalCoinsEl.textContent = String(coins).padStart(3, '0');
+
     this.gameOverScreen.classList.remove('hidden');
   }
 
@@ -75,19 +113,28 @@ export class UI {
     this.gameOverScreen.classList.add('hidden');
     this.characterScreen.classList.add('hidden');
     this.testnetScreen.classList.add('hidden');
+
     if (bestScore > 0) {
-      this.startBest.textContent = 'BEST: ' + String(bestScore).padStart(6, '0');
+      this.startBest.textContent =
+        'BEST: ' + String(bestScore).padStart(6, '0');
+
       this.startBest.classList.remove('hidden');
+    } else {
+      this.startBest.classList.add('hidden');
     }
+
     this.startScreen.classList.remove('hidden');
+    this.hud.classList.add('hidden');
   }
 
   updateScore(score) {
-    this.scoreEl.textContent = 'SCORE: ' + String(score).padStart(6, '0');
+    this.scoreEl.textContent =
+      'SCORE: ' + String(score).padStart(6, '0');
   }
 
   updateCoins(coins) {
-    this.coinsEl.textContent = 'VIBE: ' + String(coins).padStart(3, '0');
+    this.coinsEl.textContent =
+      'VIBE: ' + String(coins).padStart(3, '0');
   }
 
   showCombo(combo) {
@@ -101,7 +148,9 @@ export class UI {
 
   showVibePackBar(fraction) {
     this.packHud.classList.remove('hidden');
-    this.packBarFill.style.width = Math.max(0, Math.min(1, fraction)) * 100 + '%';
+
+    this.packBarFill.style.width =
+      Math.max(0, Math.min(1, fraction)) * 100 + '%';
   }
 
   hideVibePackBar() {
@@ -121,10 +170,16 @@ export class UI {
   }
 
   showToast(message) {
-    if (this._toastTimer) clearTimeout(this._toastTimer);
+    if (this._toastTimer) {
+      clearTimeout(this._toastTimer);
+    }
+
     this.toast.textContent = message;
     this.toast.classList.remove('hidden');
-    this._toastTimer = setTimeout(() => this.toast.classList.add('hidden'), 2600);
+
+    this._toastTimer = setTimeout(() => {
+      this.toast.classList.add('hidden');
+    }, 2600);
   }
 
   // --- Character select -----------------------------------------------
@@ -136,18 +191,28 @@ export class UI {
 
     for (const character of CHARACTERS) {
       const unlocked = isCharacterUnlocked(character, progress);
+
       const card = document.createElement('button');
-      card.className = 'character-card' + (unlocked ? '' : ' locked');
+
+      card.className =
+        'character-card' + (unlocked ? '' : ' locked');
+
       card.disabled = !unlocked;
 
       const title = document.createElement('div');
       title.className = 'character-name';
       title.textContent = character.name;
+
       card.appendChild(title);
 
       const tagline = document.createElement('div');
       tagline.className = 'character-tagline';
-      tagline.textContent = unlocked ? character.tagline : lockReason(character);
+
+      tagline.textContent =
+        unlocked
+          ? character.tagline
+          : lockReason(character);
+
       card.appendChild(tagline);
 
       if (character.id === progress.selectedCharacter) {
@@ -155,7 +220,9 @@ export class UI {
       }
 
       if (unlocked) {
-        card.addEventListener('click', () => onSelect(character.id));
+        card.addEventListener('click', () => {
+          onSelect(character.id);
+        });
       }
 
       this.characterList.appendChild(card);
@@ -167,7 +234,7 @@ export class UI {
     this.startScreen.classList.remove('hidden');
   }
 
-  // --- Testnet menu ------------------------------------------------------
+  // --- Testnet menu --------------------------------------------------
 
   openTestnetMenu() {
     this.startScreen.classList.add('hidden');
@@ -181,32 +248,73 @@ export class UI {
 
   renderTestnetState(wallet, progress) {
     const hasWallet = wallet.hasInjectedWallet();
-    this.testnetUnavailable.classList.toggle('hidden', hasWallet);
 
-    this.testnetWallet.textContent = wallet.connected ? wallet.shortAddress() : 'Not Connected';
-    this.testnetNetwork.textContent = wallet.connected
-      ? (wallet.correctNetwork ? '✓ Connected' : 'Wrong Network')
-      : 'Not Connected';
-
-    this.testnetUnconfigured.classList.toggle('hidden', !wallet.connected || isConfigured());
-    this.testnetWrongNetwork.classList.toggle(
+    this.testnetUnavailable.classList.toggle(
       'hidden',
-      !(wallet.connected && isConfigured() && !wallet.correctNetwork)
+      hasWallet
     );
 
-    this.connectBtn.classList.toggle('hidden', wallet.connected);
-    this.disconnectBtn.classList.toggle('hidden', !wallet.connected);
+    this.testnetWallet.textContent =
+      wallet.connected
+        ? wallet.shortAddress()
+        : 'Not Connected';
+
+    this.testnetNetwork.textContent =
+      wallet.connected
+        ? (
+            wallet.correctNetwork
+              ? '✓ Connected'
+              : 'Wrong Network'
+          )
+        : 'Not Connected';
+
+    this.testnetUnconfigured.classList.toggle(
+      'hidden',
+      !wallet.connected || isConfigured()
+    );
+
+    this.testnetWrongNetwork.classList.toggle(
+      'hidden',
+      !(
+        wallet.connected &&
+        isConfigured() &&
+        !wallet.correctNetwork
+      )
+    );
+
+    this.connectBtn.classList.toggle(
+      'hidden',
+      wallet.connected
+    );
+
+    this.disconnectBtn.classList.toggle(
+      'hidden',
+      !wallet.connected
+    );
 
     if (wallet.connected) {
       this.testnetUnlocks.classList.remove('hidden');
       this.testnetUnlocks.innerHTML = '';
+
       for (const rule of UNLOCK_RULES) {
         const row = document.createElement('div');
         row.className = 'unlock-row';
-        const unlocked = progress.unlockedCharacters.includes(rule.reward) ||
+
+        const unlocked =
+          progress.unlockedCharacters.includes(rule.reward) ||
           progress.unlockedPowerUps.includes(rule.reward);
-        const requirement = rule.type === 'TOKEN_BALANCE' ? `${rule.minTokens} $VIBE` : rule.type;
-        row.textContent = (unlocked ? '✓ ' : '🔒 ') + rule.id.replace(/_/g, ' ').toUpperCase() + ' — ' + requirement;
+
+        const requirement =
+          rule.type === 'TOKEN_BALANCE'
+            ? `${rule.minTokens} $VIBE`
+            : rule.type;
+
+        row.textContent =
+          (unlocked ? '✓ ' : '🔒 ') +
+          rule.id.replace(/_/g, ' ').toUpperCase() +
+          ' — ' +
+          requirement;
+
         this.testnetUnlocks.appendChild(row);
       }
     } else {
@@ -217,11 +325,16 @@ export class UI {
 
 function lockReason(character) {
   if (character.unlock.type === 'UNLOCK_RULE') {
-    const rule = UNLOCK_RULES.find((r) => r.id === character.unlock.ruleId);
+    const rule = UNLOCK_RULES.find(
+      (r) => r.id === character.unlock.ruleId
+    );
+
     if (rule && rule.type === 'TOKEN_BALANCE') {
       return `🔒 Hold ${rule.minTokens} $VIBE on testnet`;
     }
+
     return '🔒 Unlock via TESTNET menu';
   }
+
   return '🔒 Locked';
 }
