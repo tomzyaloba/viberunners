@@ -1,5 +1,5 @@
 export class AudioManager {
-  constructor() {
+  constructor(soundEnabled = true) {
     this.ctx = null;
 
     this.masterGain = null;
@@ -9,7 +9,7 @@ export class AudioManager {
     this.musicPlaying = false;
     this.musicTimer = null;
 
-    this.masterVolume = 0.8;
+    this.masterVolume = soundEnabled ? 0.8 : 0;
     this.musicVolume = 0.22;
     this.sfxVolume = 0.75;
 
@@ -46,9 +46,56 @@ export class AudioManager {
     }
   }
 
-  /* =========================================================
-     BACKGROUND MUSIC
-  ========================================================= */
+  // ---------------------------------------------------------
+  // UNIVERSAL SOUND METHOD
+  // ---------------------------------------------------------
+
+  play(sound) {
+    this.init();
+
+    if (!this.ctx) return;
+
+    switch (sound) {
+      case "jump":
+        this.playJump();
+        break;
+
+      case "coin":
+        this.playCoin();
+        break;
+
+      case "shield":
+        this.playShield();
+        break;
+
+      case "boost":
+        this.playSpeedBoost();
+        break;
+
+      case "vibepack":
+        this.playVibePack();
+        break;
+
+      case "hit":
+        this.playHit();
+        break;
+
+      case "gameover":
+        this.playGameOver();
+        break;
+
+      case "success":
+        this.playSuccess();
+        break;
+
+      default:
+        console.warn("Unknown sound:", sound);
+    }
+  }
+
+  // ---------------------------------------------------------
+  // BACKGROUND MUSIC
+  // ---------------------------------------------------------
 
   startMusic() {
     this.init();
@@ -68,16 +115,6 @@ export class AudioManager {
       return;
     }
 
-    /*
-      Cyberpunk / arcade style progression.
-
-      C minor-ish progression:
-      C - Eb - G - Bb
-      Ab - C - Eb - G
-      F - Ab - C - Eb
-      G - B - D - F
-    */
-
     const progression = [
       [130.81, 155.56, 196.00, 233.08],
       [103.83, 130.81, 155.56, 196.00],
@@ -85,15 +122,21 @@ export class AudioManager {
       [98.00, 123.47, 146.83, 174.61]
     ];
 
-    const chordIndex = Math.floor(this.step / 4) % progression.length;
+    const chordIndex =
+      Math.floor(this.step / 4) % progression.length;
+
     const noteIndex = this.step % 4;
 
     const frequency =
       progression[chordIndex][noteIndex];
 
-    this.playMusicNote(frequency, 0.28);
+    this.playMusicNote(
+      frequency,
+      0.28,
+      "sawtooth",
+      0.09
+    );
 
-    // Higher synth accent
     if (this.step % 2 === 0) {
       const melodyNotes = [
         261.63,
@@ -104,11 +147,11 @@ export class AudioManager {
         311.13
       ];
 
-      const melodyFrequency =
-        melodyNotes[(this.step / 2) % melodyNotes.length];
+      const melodyIndex =
+        Math.floor(this.step / 2) % melodyNotes.length;
 
       this.playMusicNote(
-        melodyFrequency,
+        melodyNotes[melodyIndex],
         0.18,
         "triangle",
         0.07
@@ -136,6 +179,7 @@ export class AudioManager {
     const gain = this.ctx.createGain();
 
     oscillator.type = type;
+
     oscillator.frequency.setValueAtTime(
       frequency,
       this.ctx.currentTime
@@ -160,6 +204,7 @@ export class AudioManager {
     gain.connect(this.musicGain);
 
     oscillator.start();
+
     oscillator.stop(
       this.ctx.currentTime + duration + 0.02
     );
@@ -174,9 +219,9 @@ export class AudioManager {
     }
   }
 
-  /* =========================================================
-     JUMP
-  ========================================================= */
+  // ---------------------------------------------------------
+  // JUMP
+  // ---------------------------------------------------------
 
   playJump() {
     this.init();
@@ -217,14 +262,15 @@ export class AudioManager {
     gain.connect(this.sfxGain);
 
     oscillator.start();
+
     oscillator.stop(
       this.ctx.currentTime + 0.2
     );
   }
 
-  /* =========================================================
-     COIN
-  ========================================================= */
+  // ---------------------------------------------------------
+  // COIN
+  // ---------------------------------------------------------
 
   playCoin() {
     this.init();
@@ -257,9 +303,9 @@ export class AudioManager {
     }, 110);
   }
 
-  /* =========================================================
-     SPEED BOOST
-  ========================================================= */
+  // ---------------------------------------------------------
+  // SPEED BOOST
+  // ---------------------------------------------------------
 
   playSpeedBoost() {
     this.init();
@@ -300,14 +346,15 @@ export class AudioManager {
     gain.connect(this.sfxGain);
 
     oscillator.start();
+
     oscillator.stop(
       this.ctx.currentTime + 0.55
     );
   }
 
-  /* =========================================================
-     SHIELD
-  ========================================================= */
+  // ---------------------------------------------------------
+  // SHIELD
+  // ---------------------------------------------------------
 
   playShield() {
     this.init();
@@ -316,7 +363,7 @@ export class AudioManager {
 
     this.playTone(
       350,
-      0.12,
+           0.12,
       "sine",
       0.2
     );
@@ -340,9 +387,9 @@ export class AudioManager {
     }, 160);
   }
 
-  /* =========================================================
-     VIBEPACK
-  ========================================================= */
+  // ---------------------------------------------------------
+  // VIBE PACK
+  // ---------------------------------------------------------
 
   playVibePack() {
     this.init();
@@ -369,9 +416,9 @@ export class AudioManager {
     });
   }
 
-  /* =========================================================
-     OBSTACLE HIT
-  ========================================================= */
+  // ---------------------------------------------------------
+  // OBSTACLE HIT
+  // ---------------------------------------------------------
 
   playHit() {
     this.init();
@@ -407,17 +454,20 @@ export class AudioManager {
     gain.connect(this.sfxGain);
 
     oscillator.start();
+
     oscillator.stop(
       this.ctx.currentTime + 0.32
     );
 
-    // Impact click
-    this.playNoise(0.12, 0.25);
+    this.playNoise(
+      0.12,
+      0.25
+    );
   }
 
-  /* =========================================================
-     GAME OVER
-  ========================================================= */
+  // ---------------------------------------------------------
+  // GAME OVER
+  // ---------------------------------------------------------
 
   playGameOver() {
     this.init();
@@ -445,9 +495,9 @@ export class AudioManager {
     });
   }
 
-  /* =========================================================
-     CHECKPOINT / SUCCESS
-  ========================================================= */
+  // ---------------------------------------------------------
+  // SUCCESS
+  // ---------------------------------------------------------
 
   playSuccess() {
     this.init();
@@ -473,9 +523,9 @@ export class AudioManager {
     });
   }
 
-  /* =========================================================
-     GENERIC TONE
-  ========================================================= */
+  // ---------------------------------------------------------
+  // GENERIC TONE
+  // ---------------------------------------------------------
 
   playTone(
     frequency,
@@ -491,6 +541,7 @@ export class AudioManager {
     const gain = this.ctx.createGain();
 
     oscillator.type = type;
+
     oscillator.frequency.setValueAtTime(
       frequency,
       this.ctx.currentTime
@@ -521,17 +572,20 @@ export class AudioManager {
     );
   }
 
-  /* =========================================================
-     NOISE
-  ========================================================= */
+  // ---------------------------------------------------------
+  // NOISE
+  // ---------------------------------------------------------
 
-  playNoise(duration = 0.15, volume = 0.2) {
+  playNoise(
+    duration = 0.15,
+    volume = 0.2
+  ) {
     this.init();
 
     if (!this.ctx) return;
 
     const bufferSize =
-      this.ctx.sampleRate * duration;
+      Math.floor(this.ctx.sampleRate * duration);
 
     const buffer =
       this.ctx.createBuffer(
@@ -540,7 +594,8 @@ export class AudioManager {
         this.ctx.sampleRate
       );
 
-    const data = buffer.getChannelData(0);
+    const data =
+      buffer.getChannelData(0);
 
     for (let i = 0; i < bufferSize; i++) {
       data[i] =
@@ -571,9 +626,32 @@ export class AudioManager {
     source.start();
   }
 
-  /* =========================================================
-     VOLUME
-  ========================================================= */
+  // ---------------------------------------------------------
+  // ENABLE / DISABLE SOUND
+  // ---------------------------------------------------------
+
+  setEnabled(enabled) {
+    this.masterVolume = enabled ? 0.8 : 0;
+
+    this.init();
+
+    if (this.masterGain) {
+      this.masterGain.gain.value =
+        this.masterVolume;
+    }
+
+    if (enabled) {
+      if (!this.musicPlaying) {
+        this.startMusic();
+      }
+    } else {
+      this.stopMusic();
+    }
+  }
+
+  // ---------------------------------------------------------
+  // VOLUME
+  // ---------------------------------------------------------
 
   setMasterVolume(volume) {
     this.masterVolume = volume;
